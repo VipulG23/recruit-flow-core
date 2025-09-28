@@ -355,17 +355,6 @@ export function createMockServer() {
         });
       });
 
-      // Analytics/Stats routes
-      this.get("/stats/overview", () => {
-        return {
-          totalJobs: randomInt(20, 50),
-          activeJobs: randomInt(15, 35),
-          totalCandidates: randomInt(800, 1200),
-          recentApplications: randomInt(50, 150),
-          averageTimeToHire: randomInt(14, 45),
-          offerAcceptanceRate: Math.random() * 0.3 + 0.6,
-        };
-      });
     },
   });
 }

@@ -3,8 +3,6 @@ import {
   Users, 
   BriefcaseIcon, 
   FileText, 
-  BarChart3, 
-  Settings,
   ChevronLeft,
   ChevronRight,
   Building2
@@ -32,18 +30,6 @@ const navigation = [
     href: "/assessments", 
     icon: FileText,
     description: "Create and manage assessments",
-  },
-  {
-    name: "Analytics",
-    href: "/analytics",
-    icon: BarChart3,
-    description: "View hiring metrics",
-  },
-  {
-    name: "Settings",
-    href: "/settings",
-    icon: Settings,
-    description: "Application settings",
   },
 ];
 

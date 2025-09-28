@@ -88,9 +88,6 @@ export const Header = () => {
                 Profile
               </DropdownMenuItem>
               <DropdownMenuItem>
-                Settings
-              </DropdownMenuItem>
-              <DropdownMenuItem>
                 Help & Support
               </DropdownMenuItem>
               <DropdownMenuSeparator />
