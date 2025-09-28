@@ -22,6 +22,7 @@ if (process.env.NODE_ENV === "development") {
 
 const App = () => {
   const { loadFromStorage, currentTheme } = useStore();
+  // Force re-render
 
   useEffect(() => {
     // Load persisted state from storage
