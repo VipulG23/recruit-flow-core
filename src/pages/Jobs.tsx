@@ -1,29 +1,48 @@
+"use client";
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Plus, Search, Filter, MoreHorizontal, MapPin, Clock, Users, Briefcase } from "lucide-react";
+import {
+  Plus,
+  Search,
+  Filter,
+  MoreHorizontal,
+  MapPin,
+  Clock,
+  Users,
+  Briefcase,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { useStore, Job } from "@/store/useStore";
 import { JOB_STATUSES } from "@/api/server";
 
 const statusColors = {
   active: "bg-success text-success-foreground",
-  paused: "bg-warning text-warning-foreground", 
+  paused: "bg-warning text-warning-foreground",
   closed: "bg-muted text-muted-foreground",
   draft: "bg-secondary text-secondary-foreground",
 };
 
 const priorityColors = {
   low: "text-muted-foreground",
-  medium: "text-foreground", 
+  medium: "text-foreground",
   high: "text-warning",
   urgent: "text-destructive",
 };
@@ -38,32 +57,84 @@ const fetchJobs = async (): Promise<Job[]> => {
 export default function JobsPage() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isJobFormOpen, setIsJobFormOpen] = useState(false);
+
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false);
+
   const { setJobs, jobs } = useStore();
 
-  const { data: jobsData, isLoading, error } = useQuery({
+  const {
+    data: jobsData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["jobs"],
     queryFn: fetchJobs,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
 
   useEffect(() => {
-    if (jobsData) {
-      setJobs(jobsData);
-    }
+    if (jobsData) setJobs(jobsData);
   }, [jobsData, setJobs]);
 
   const filteredJobs = jobs.filter((job) => {
-    const matchesSearch = job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      job.department.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === "all" || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
+
+  const handleCreateJob = (e: React.FormEvent) => {
+    e.preventDefault();
+    const form = e.target as HTMLFormElement;
+    const formData = new FormData(form);
+
+    const newJob: Job = {
+      id: Date.now().toString(),
+      title: formData.get("title") as string,
+      department: formData.get("department") as string,
+      location: formData.get("location") as string,
+      type: formData.get("type") as string,
+      status: "active",
+      priority: formData.get("priority") as string,
+      salary: {
+        min: Number(formData.get("salaryMin")),
+        max: Number(formData.get("salaryMax")),
+      },
+      createdAt: new Date().toISOString(),
+    };
+
+    setJobs([...jobs, newJob]);
+    setIsJobFormOpen(false);
+    form.reset();
+  };
+
+  const handleDeleteJob = async (jobId: string) => {
+    if (!confirm("Are you sure you want to archive this job?")) return;
+
+    try {
+      setJobs(jobs.filter((job) => job.id !== jobId));
+
+      // Optional: Remove from server
+      const response = await fetch(`/api/jobs/${jobId}`, { method: "DELETE" });
+      if (!response.ok) {
+        throw new Error("Failed to delete job from server");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error deleting job. Please try again.");
+    }
+  };
 
   if (error) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <h3 className="text-lg font-semibold text-destructive">Error loading jobs</h3>
+          <h3 className="text-lg font-semibold text-destructive">
+            Error loading jobs
+          </h3>
           <p className="text-muted-foreground">Please try again later</p>
         </div>
       </div>
@@ -80,11 +151,224 @@ export default function JobsPage() {
             Manage your job postings and hiring pipeline
           </p>
         </div>
-        <Button className="btn-primary">
-          <Plus className="h-4 w-4 mr-2" />
-          Create Job
-        </Button>
+
+        {/* Create Job Button + Dialog */}
+        <Dialog open={isJobFormOpen} onOpenChange={setIsJobFormOpen}>
+          <DialogTrigger asChild>
+            <Button className="btn-primary">
+              <Plus className="h-4 w-4 mr-2" />
+              Create Job
+            </Button>
+          </DialogTrigger>
+
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Create Job</DialogTitle>
+            </DialogHeader>
+            <form onSubmit={handleCreateJob} className="space-y-4">
+              <div>
+                <Label htmlFor="title">Job Title</Label>
+                <Input id="title" name="title" required />
+              </div>
+
+              <div>
+                <Label htmlFor="department">Department</Label>
+                <Input id="department" name="department" required />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="location">Location</Label>
+                  <Input id="location" name="location" required />
+                </div>
+                <div>
+                  <Label htmlFor="type">Job Type</Label>
+                  <Input id="type" name="type" placeholder="Full-time" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="salaryMin">Min Salary</Label>
+                  <Input
+                    type="number"
+                    id="salaryMin"
+                    name="salaryMin"
+                    required
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="salaryMax">Max Salary</Label>
+                  <Input
+                    type="number"
+                    id="salaryMax"
+                    name="salaryMax"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="priority">Priority</Label>
+                <select
+                  id="priority"
+                  name="priority"
+                  className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  required
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit" className="btn-primary">
+                  Save
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setIsJobFormOpen(false)}
+                >
+                  Cancel
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
+
+      {/* Edit/View Job Dialog */}
+      <Dialog
+        open={isEditFormOpen}
+        onOpenChange={() => setIsEditFormOpen(false)}
+      >
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Edit Job</DialogTitle>
+          </DialogHeader>
+
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!selectedJob) return;
+              const form = e.target as HTMLFormElement;
+              const formData = new FormData(form);
+
+              const updatedJob: Job = {
+                ...selectedJob,
+                title: formData.get("title") as string,
+                department: formData.get("department") as string,
+                location: formData.get("location") as string,
+                type: formData.get("type") as string,
+                priority: formData.get("priority") as string,
+                salary: {
+                  min: Number(formData.get("salaryMin")),
+                  max: Number(formData.get("salaryMax")),
+                },
+              };
+
+              setJobs(
+                jobs.map((j) => (j.id === updatedJob.id ? updatedJob : j))
+              );
+              setIsEditFormOpen(false);
+              setSelectedJob(null);
+            }}
+            className="space-y-4"
+          >
+            <div>
+              <Label htmlFor="title">Job Title</Label>
+              <Input
+                id="title"
+                name="title"
+                required
+                defaultValue={selectedJob?.title}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="department">Department</Label>
+              <Input
+                id="department"
+                name="department"
+                required
+                defaultValue={selectedJob?.department}
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="location">Location</Label>
+                <Input
+                  id="location"
+                  name="location"
+                  required
+                  defaultValue={selectedJob?.location}
+                />
+              </div>
+              <div>
+                <Label htmlFor="type">Job Type</Label>
+                <Input id="type" name="type" defaultValue={selectedJob?.type} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="salaryMin">Min Salary</Label>
+                <Input
+                  type="number"
+                  id="salaryMin"
+                  name="salaryMin"
+                  required
+                  defaultValue={selectedJob?.salary.min}
+                />
+              </div>
+              <div>
+                <Label htmlFor="salaryMax">Max Salary</Label>
+                <Input
+                  type="number"
+                  id="salaryMax"
+                  name="salaryMax"
+                  required
+                  defaultValue={selectedJob?.salary.max}
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="priority">Priority</Label>
+              <select
+                id="priority"
+                name="priority"
+                className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                required
+                defaultValue={selectedJob?.priority}
+              >
+                <option value="low">Low</option>
+                <option value="medium">Medium</option>
+                <option value="high">High</option>
+                <option value="urgent">Urgent</option>
+              </select>
+            </div>
+
+            <DialogFooter>
+              <Button type="submit" className="btn-primary">
+                Save
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setIsEditFormOpen(false);
+                  setSelectedJob(null);
+                }}
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       {/* Filters */}
       <div className="flex items-center gap-4">
@@ -97,7 +381,7 @@ export default function JobsPage() {
             className="pl-9"
           />
         </div>
-        
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="gap-2">
@@ -110,7 +394,7 @@ export default function JobsPage() {
               All Statuses
             </DropdownMenuItem>
             {JOB_STATUSES.map((status) => (
-              <DropdownMenuItem 
+              <DropdownMenuItem
                 key={status.value}
                 onClick={() => setStatusFilter(status.value)}
               >
@@ -142,8 +426,8 @@ export default function JobsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredJobs.map((job) => (
-            <Card 
-              key={job.id} 
+            <Card
+              key={job.id}
               className="card-interactive hover:shadow-primary/10"
             >
               <CardHeader className="pb-3">
@@ -163,17 +447,25 @@ export default function JobsPage() {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem>View Details</DropdownMenuItem>
-                      <DropdownMenuItem>Edit Job</DropdownMenuItem>
-                      <DropdownMenuItem>View Candidates</DropdownMenuItem>
-                      <DropdownMenuItem className="text-destructive">
+                      <DropdownMenuItem
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setIsEditFormOpen(true);
+                        }}
+                      >
+                        Edit Job
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        className="text-destructive"
+                        onClick={() => handleDeleteJob(job.id)}
+                      >
                         Archive Job
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
                 </div>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <div className="flex items-center gap-4 text-sm text-muted-foreground">
                   <div className="flex items-center gap-1">
@@ -187,27 +479,34 @@ export default function JobsPage() {
                 </div>
 
                 <div className="flex items-center justify-between">
-                  <Badge 
+                  <Badge
                     className={statusColors[job.status]}
                     variant="secondary"
                   >
-                    {JOB_STATUSES.find(s => s.value === job.status)?.label}
+                    {JOB_STATUSES.find((s) => s.value === job.status)?.label}
                   </Badge>
-                  
+
                   <div className="text-right">
                     <div className="flex items-center gap-1 text-sm text-muted-foreground">
                       <Users className="h-3 w-3" />
                       <span>24 candidates</span>
                     </div>
-                    <div className={`text-sm font-medium ${priorityColors[job.priority]}`}>
-                      {job.priority.charAt(0).toUpperCase() + job.priority.slice(1)} priority
+                    <div
+                      className={`text-sm font-medium ${
+                        priorityColors[job.priority]
+                      }`}
+                    >
+                      {job.priority.charAt(0).toUpperCase() +
+                        job.priority.slice(1)}{" "}
+                      priority
                     </div>
                   </div>
                 </div>
 
                 <div className="text-sm">
                   <div className="font-medium text-foreground">
-                    ${job.salary.min.toLocaleString()} - ${job.salary.max.toLocaleString()}
+                    ${job.salary.min.toLocaleString()} - $
+                    {job.salary.max.toLocaleString()}
                   </div>
                   <div className="text-muted-foreground">
                     Posted {new Date(job.createdAt).toLocaleDateString()}
@@ -226,13 +525,15 @@ export default function JobsPage() {
           </div>
           <h3 className="text-lg font-semibold">No jobs found</h3>
           <p className="text-muted-foreground mb-4">
-            {searchTerm || statusFilter !== "all" 
+            {searchTerm || statusFilter !== "all"
               ? "Try adjusting your search or filters"
-              : "Create your first job posting to get started"
-            }
+              : "Create your first job posting to get started"}
           </p>
-          {(!searchTerm && statusFilter === "all") && (
-            <Button className="btn-primary">
+          {!searchTerm && statusFilter === "all" && (
+            <Button
+              className="btn-primary"
+              onClick={() => setIsJobFormOpen(true)}
+            >
               <Plus className="h-4 w-4 mr-2" />
               Create Your First Job
             </Button>

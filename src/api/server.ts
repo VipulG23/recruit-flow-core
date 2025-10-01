@@ -1,23 +1,70 @@
-import { createServer, Model, Factory, belongsTo, hasMany, Response } from "miragejs";
+import {
+  createServer,
+  Model,
+  Factory,
+  belongsTo,
+  hasMany,
+  Response,
+} from "miragejs";
+
 // Using built-in crypto for fake data generation since faker dependency issue
 const generateId = () => crypto.randomUUID();
 const generateName = () => {
-  const firstNames = ["John", "Jane", "Alex", "Sarah", "Mike", "Emily", "David", "Lisa", "Tom", "Anna"];
-  const lastNames = ["Smith", "Johnson", "Williams", "Brown", "Jones", "Garcia", "Miller", "Davis", "Rodriguez", "Martinez"];
+  const firstNames = [
+    "John",
+    "Jane",
+    "Alex",
+    "Sarah",
+    "Mike",
+    "Emily",
+    "David",
+    "Lisa",
+    "Tom",
+    "Anna",
+  ];
+  const lastNames = [
+    "Smith",
+    "Johnson",
+    "Williams",
+    "Brown",
+    "Jones",
+    "Garcia",
+    "Miller",
+    "Davis",
+    "Rodriguez",
+    "Martinez",
+  ];
   return {
     first: firstNames[Math.floor(Math.random() * firstNames.length)],
-    last: lastNames[Math.floor(Math.random() * lastNames.length)]
+    last: lastNames[Math.floor(Math.random() * lastNames.length)],
   };
 };
-const generateEmail = (firstName: string, lastName: string) => 
+const generateEmail = (firstName: string, lastName: string) =>
   `${firstName.toLowerCase()}.${lastName.toLowerCase()}@email.com`;
-const randomInt = (min: number, max: number) => Math.floor(Math.random() * (max - min + 1)) + min;
-const randomElement = <T>(arr: T[]) => arr[Math.floor(Math.random() * arr.length)];
+const randomInt = (min: number, max: number) =>
+  Math.floor(Math.random() * (max - min + 1)) + min;
+const randomElement = <T>(arr: T[]) =>
+  arr[Math.floor(Math.random() * arr.length)];
 const generateText = (sentences = 1) => {
-  const words = ["lorem", "ipsum", "dolor", "sit", "amet", "consectetur", "adipiscing", "elit", "sed", "do"];
-  return Array.from({ length: sentences }, () => 
-    Array.from({ length: randomInt(8, 15) }, () => randomElement(words)).join(" ")
-  ).join(". ") + ".";
+  const words = [
+    "lorem",
+    "ipsum",
+    "dolor",
+    "sit",
+    "amet",
+    "consectetur",
+    "adipiscing",
+    "elit",
+    "sed",
+    "do",
+  ];
+  return (
+    Array.from({ length: sentences }, () =>
+      Array.from({ length: randomInt(8, 15) }, () => randomElement(words)).join(
+        " "
+      )
+    ).join(". ") + "."
+  );
 };
 
 // Job stages for candidate pipeline
@@ -56,7 +103,7 @@ export function createMockServer() {
         title() {
           const roles = [
             "Senior Software Engineer",
-            "Product Manager", 
+            "Product Manager",
             "UX Designer",
             "Data Scientist",
             "DevOps Engineer",
@@ -72,26 +119,52 @@ export function createMockServer() {
         },
         department() {
           return randomElement([
-            "Engineering", "Product", "Design", "Data", "Marketing", "Sales", "Support"
+            "Engineering",
+            "Product",
+            "Design",
+            "Data",
+            "Marketing",
+            "Sales",
+            "Support",
           ]);
         },
         location() {
           return randomElement([
-            "Remote", "San Francisco", "New York", "London", "Berlin", "Toronto"
+            "Remote",
+            "San Francisco",
+            "New York",
+            "London",
+            "Berlin",
+            "Toronto",
           ]);
         },
         type() {
-          return randomElement(["Full-time", "Part-time", "Contract", "Intern"]);
+          return randomElement([
+            "Full-time",
+            "Part-time",
+            "Contract",
+            "Intern",
+          ]);
         },
         status() {
-          return randomElement(JOB_STATUSES.map(s => s.value));
+          return randomElement(JOB_STATUSES.map((s) => s.value));
         },
         description() {
           return generateText(3);
         },
         requirements() {
-          return Array.from({ length: randomInt(3, 8) }, () =>
-            "Experience with " + randomElement(["React", "Node.js", "Python", "AWS", "Docker", "TypeScript"])
+          return Array.from(
+            { length: randomInt(3, 8) },
+            () =>
+              "Experience with " +
+              randomElement([
+                "React",
+                "Node.js",
+                "Python",
+                "AWS",
+                "Docker",
+                "TypeScript",
+              ])
           );
         },
         salary() {
@@ -116,7 +189,10 @@ export function createMockServer() {
             id: generateId(),
             name: `${name.first} ${name.last}`,
             email: generateEmail(name.first, name.last),
-            avatar: `https://images.unsplash.com/photo-${randomInt(1500000000000, 1600000000000)}?w=40&h=40&fit=crop&crop=face`,
+            avatar: `https://images.unsplash.com/photo-${randomInt(
+              1500000000000,
+              1600000000000
+            )}?w=40&h=40&fit=crop&crop=face`,
           };
         },
       }),
@@ -133,28 +209,51 @@ export function createMockServer() {
           return generateEmail(name.first, name.last);
         },
         phone() {
-          return `+1-${randomInt(200, 999)}-${randomInt(100, 999)}-${randomInt(1000, 9999)}`;
+          return `+1-${randomInt(200, 999)}-${randomInt(100, 999)}-${randomInt(
+            1000,
+            9999
+          )}`;
         },
         avatar() {
-          return `https://images.unsplash.com/photo-${randomInt(1500000000000, 1600000000000)}?w=40&h=40&fit=crop&crop=face`;
+          return `https://images.unsplash.com/photo-${randomInt(
+            1500000000000,
+            1600000000000
+          )}?w=40&h=40&fit=crop&crop=face`;
         },
         location() {
-          const cities = ["New York, NY", "San Francisco, CA", "Austin, TX", "Seattle, WA", "Boston, MA"];
+          const cities = [
+            "New York, NY",
+            "San Francisco, CA",
+            "Austin, TX",
+            "Seattle, WA",
+            "Boston, MA",
+          ];
           return randomElement(cities);
         },
         experience() {
           return randomInt(0, 15);
         },
         currentRole() {
-          const roles = ["Software Engineer", "Product Manager", "Designer", "Data Analyst"];
+          const roles = [
+            "Software Engineer",
+            "Product Manager",
+            "Designer",
+            "Data Analyst",
+          ];
           return randomElement(roles);
         },
         currentCompany() {
-          const companies = ["TechCorp", "InnovateCo", "DataSoft", "CloudTech", "StartupXYZ"];
+          const companies = [
+            "TechCorp",
+            "InnovateCo",
+            "DataSoft",
+            "CloudTech",
+            "StartupXYZ",
+          ];
           return randomElement(companies);
         },
         stage() {
-          return randomElement(JOB_STAGES.map(s => s.id));
+          return randomElement(JOB_STAGES.map((s) => s.id));
         },
         appliedAt() {
           return new Date(Date.now() - randomInt(0, 60 * 24 * 60 * 60 * 1000));
@@ -169,8 +268,19 @@ export function createMockServer() {
           return generateText(1);
         },
         skills() {
-          const allSkills = ["React", "TypeScript", "Node.js", "Python", "AWS", "Docker", "GraphQL", "MongoDB"];
-          return Array.from({ length: randomInt(3, 10) }, () => randomElement(allSkills));
+          const allSkills = [
+            "React",
+            "TypeScript",
+            "Node.js",
+            "Python",
+            "AWS",
+            "Docker",
+            "GraphQL",
+            "MongoDB",
+          ];
+          return Array.from({ length: randomInt(3, 10) }, () =>
+            randomElement(allSkills)
+          );
         },
         resumeUrl() {
           return "https://example.com/resume.pdf";
@@ -180,7 +290,12 @@ export function createMockServer() {
         },
         source() {
           return randomElement([
-            "LinkedIn", "Indeed", "Company Website", "Referral", "Glassdoor", "AngelList"
+            "LinkedIn",
+            "Indeed",
+            "Company Website",
+            "Referral",
+            "Glassdoor",
+            "AngelList",
           ]);
         },
       }),
@@ -189,7 +304,7 @@ export function createMockServer() {
         title() {
           return randomElement([
             "Technical Screening",
-            "Coding Challenge", 
+            "Coding Challenge",
             "System Design",
             "Behavioral Interview",
             "Take-home Project",
@@ -211,8 +326,12 @@ export function createMockServer() {
             type: randomElement(["multiple-choice", "text", "code", "rating"]),
             question: generateText(1).replace(".", "?"),
             required: Math.random() > 0.3,
-            options: Math.random() > 0.5 ? 
-              Array.from({ length: 4 }, () => generateText(1).split(" ").slice(0, 3).join(" ")) : undefined,
+            options:
+              Math.random() > 0.5
+                ? Array.from({ length: 4 }, () =>
+                    generateText(1).split(" ").slice(0, 3).join(" ")
+                  )
+                : undefined,
           }));
         },
         createdAt() {
@@ -227,7 +346,7 @@ export function createMockServer() {
     seeds(server) {
       // Create jobs
       const jobs = server.createList("job", 25);
-      
+
       // Create candidates for each job
       jobs.forEach((job: any) => {
         const candidateCount = randomInt(5, 40);
@@ -244,7 +363,6 @@ export function createMockServer() {
 
       // Jobs routes
       this.get("/jobs", (schema: any) => {
-        // Simulate occasional errors
         if (Math.random() < 0.05) {
           return new Response(500, {}, { error: "Server error" });
         }
@@ -254,7 +372,7 @@ export function createMockServer() {
       this.get("/jobs/:id", (schema: any, request) => {
         const id = request.params.id;
         const job = schema.jobs.find(id);
-        
+
         if (!job) {
           return new Response(404, {}, { error: "Job not found" });
         }
@@ -278,7 +396,7 @@ export function createMockServer() {
         const id = request.params.id;
         const attrs = JSON.parse(request.requestBody);
         const job = schema.jobs.find(id);
-        
+
         if (!job) {
           return new Response(404, {}, { error: "Job not found" });
         }
@@ -294,7 +412,7 @@ export function createMockServer() {
         const { jobId, stage, search } = queryParams;
         const page = parseInt(queryParams.page as string) || 1;
         const limit = parseInt(queryParams.limit as string) || 50;
-        
+
         let candidates = schema.candidates.all();
 
         if (jobId) {
@@ -305,18 +423,21 @@ export function createMockServer() {
           candidates = candidates.filter((c: any) => c.stage === stage);
         }
 
-        if (search && typeof search === 'string') {
+        if (search && typeof search === "string") {
           const searchLower = search.toLowerCase();
-          candidates = candidates.filter((c: any) => 
-            c.firstName.toLowerCase().includes(searchLower) ||
-            c.lastName.toLowerCase().includes(searchLower) ||
-            c.email.toLowerCase().includes(searchLower)
+          candidates = candidates.filter(
+            (c: any) =>
+              c.firstName.toLowerCase().includes(searchLower) ||
+              c.lastName.toLowerCase().includes(searchLower) ||
+              c.email.toLowerCase().includes(searchLower)
           );
         }
 
-        // Pagination
         const offset = (page - 1) * limit;
-        const paginatedCandidates = candidates.models.slice(offset, offset + limit);
+        const paginatedCandidates = candidates.models.slice(
+          offset,
+          offset + limit
+        );
 
         return {
           candidates: paginatedCandidates.map((c: any) => c.attrs),
@@ -339,22 +460,38 @@ export function createMockServer() {
       this.patch("/assessments/:id");
       this.delete("/assessments/:id");
 
-      // Assessment responses
       this.post("/assessments/:id/responses", (schema: any, request) => {
         const assessmentId = request.params.id;
         const response = JSON.parse(request.requestBody);
-        
-        // In a real app, you'd save this to a responses table
-        return new Response(201, {}, { 
-          id: generateId(),
-          assessmentId,
-          candidateId: response.candidateId,
-          responses: response.responses,
-          submittedAt: new Date(),
-          score: randomInt(60, 100),
-        });
+
+        return new Response(
+          201,
+          {},
+          {
+            id: generateId(),
+            assessmentId,
+            candidateId: response.candidateId,
+            responses: response.responses,
+            submittedAt: new Date(),
+            score: randomInt(60, 100),
+          }
+        );
       });
 
+      // ✅ Stats overview route (FIX for Dashboard)
+      this.get("/stats/overview", (schema: any) => {
+        return {
+          jobs: schema.jobs.all().length,
+          candidates: schema.candidates.all().length,
+          assessments: schema.assessments.all().length,
+          activeJobs: schema.jobs
+            .all()
+            .models.filter((j: any) => j.status === "active").length,
+          hired: schema.candidates
+            .all()
+            .models.filter((c: any) => c.stage === "hired").length,
+        };
+      });
     },
   });
 }

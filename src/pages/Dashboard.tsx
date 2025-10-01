@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
-import { 
-  Users, 
-  BriefcaseIcon, 
-  FileText, 
+import {
+  Users,
+  BriefcaseIcon,
+  FileText,
   TrendingUp,
   Clock,
   CheckCircle,
@@ -25,8 +25,18 @@ interface DashboardStats {
 const fetchDashboardStats = async (): Promise<DashboardStats> => {
   const response = await fetch("/api/stats/overview");
   if (!response.ok) throw new Error("Failed to fetch stats");
-  return response.json();
+  const data = await response.json();
+
+  return {
+    totalJobs: data.jobs,
+    activeJobs: data.activeJobs,
+    totalCandidates: data.candidates,
+    recentApplications: 0, 
+    averageTimeToHire: 30, 
+    offerAcceptanceRate: data.candidates ? data.hired / data.candidates : 0,
+  };
 };
+
 
 export default function Dashboard() {
   const { data: stats, isLoading, error } = useQuery({
@@ -46,12 +56,12 @@ export default function Dashboard() {
     );
   }
 
-  const StatCard = ({ 
-    title, 
-    value, 
-    icon: Icon, 
-    change, 
-    changeType = "neutral" 
+  const StatCard = ({
+    title,
+    value,
+    icon: Icon,
+    change,
+    changeType = "neutral"
   }: {
     title: string;
     value: string | number;
@@ -162,7 +172,7 @@ export default function Dashboard() {
               </div>
               <Progress value={((stats?.averageTimeToHire || 0) / 60) * 100} className="h-2" />
             </div>
-            
+
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span>Offer Acceptance Rate</span>
@@ -198,7 +208,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">Senior Developer - 2 min ago</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-warning"></div>
                 <div className="flex-1">
@@ -206,7 +216,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">Product Manager - 1 hour ago</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-primary"></div>
                 <div className="flex-1">
@@ -214,7 +224,7 @@ export default function Dashboard() {
                   <p className="text-xs text-muted-foreground">UX Designer - 3 hours ago</p>
                 </div>
               </div>
-              
+
               <div className="flex items-center gap-3">
                 <div className="w-2 h-2 rounded-full bg-success"></div>
                 <div className="flex-1">
@@ -234,23 +244,23 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="card-interactive cursor-pointer hover:border-primary">
+            <Card className="cursor-pointer hover:border-primary transition-colors">
               <CardContent className="p-4 text-center">
                 <BriefcaseIcon className="h-8 w-8 text-primary mx-auto mb-2" />
                 <h3 className="font-semibold">Create Job</h3>
                 <p className="text-sm text-muted-foreground">Post a new job opening</p>
               </CardContent>
             </Card>
-            
-            <Card className="card-interactive cursor-pointer hover:border-primary">
+
+            <Card className="cursor-pointer hover:border-primary transition-colors">
               <CardContent className="p-4 text-center">
                 <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
                 <h3 className="font-semibold">Create Assessment</h3>
                 <p className="text-sm text-muted-foreground">Build candidate evaluation</p>
               </CardContent>
             </Card>
-            
-            <Card className="card-interactive cursor-pointer hover:border-primary">
+
+            <Card className="cursor-pointer hover:border-primary transition-colors">
               <CardContent className="p-4 text-center">
                 <Users className="h-8 w-8 text-primary mx-auto mb-2" />
                 <h3 className="font-semibold">Review Candidates</h3>
