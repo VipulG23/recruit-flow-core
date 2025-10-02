@@ -12,6 +12,7 @@ import Assessments from "./pages/Assessments";
 import NotFound from "./pages/NotFound";
 import { createMockServer } from "@/api/server";
 import { useStore } from "@/store/useStore";
+import LandingPage from "./pages/LandingPage";
 
 const queryClient = new QueryClient();
 
@@ -39,12 +40,15 @@ const App = () => {
         <Sonner />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<AppLayout />}>
-              <Route index element={<Dashboard />} />
+            {/* Landing page (no sidebar/layout) */}
+            <Route path="/" element={<LandingPage />} />
+
+            {/* All routes that use AppLayout */}
+            <Route element={<AppLayout />}>
+              <Route path="dashboard" element={<Dashboard />} />
               <Route path="jobs" element={<Jobs />} />
               <Route path="candidates" element={<Candidates />} />
               <Route path="assessments" element={<Assessments />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

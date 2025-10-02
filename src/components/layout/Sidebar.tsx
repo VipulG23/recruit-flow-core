@@ -1,18 +1,35 @@
 import { NavLink } from "react-router-dom";
-import { 
-  Users, 
-  BriefcaseIcon, 
-  FileText, 
+import {
+  Users,
+  BriefcaseIcon,
+  FileText,
   ChevronLeft,
   ChevronRight,
-  Building2
+  Building2,
+  LayoutDashboard,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/store/useStore";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const navigation = [
+  {
+    name: "About Us",
+    href: "/",
+    icon: Building2,
+    description: "Learn more about our platform",
+  },
+  {
+    name: "Dashboard",
+    href: "/dashboard",
+    icon: LayoutDashboard,
+    description: "Overview of stats and activity",
+  },
   {
     name: "Jobs",
     href: "/jobs",
@@ -20,14 +37,14 @@ const navigation = [
     description: "Manage job postings",
   },
   {
-    name: "Candidates", 
+    name: "Candidates",
     href: "/candidates",
     icon: Users,
     description: "View candidate pipeline",
   },
   {
     name: "Assessments",
-    href: "/assessments", 
+    href: "/assessments",
     icon: FileText,
     description: "Create and manage assessments",
   },
@@ -36,7 +53,7 @@ const navigation = [
 export const Sidebar = () => {
   const { sidebarCollapsed, setSidebarCollapsed } = useStore();
 
-  const NavItem = ({ item }: { item: typeof navigation[0] }) => {
+  const NavItem = ({ item }: { item: (typeof navigation)[0] }) => {
     const content = (
       <NavLink
         to={item.href}
@@ -59,12 +76,12 @@ export const Sidebar = () => {
     if (sidebarCollapsed) {
       return (
         <Tooltip>
-          <TooltipTrigger asChild>
-            {content}
-          </TooltipTrigger>
+          <TooltipTrigger asChild>{content}</TooltipTrigger>
           <TooltipContent side="right" className="flex flex-col">
             <span className="font-medium">{item.name}</span>
-            <span className="text-xs text-muted-foreground">{item.description}</span>
+            <span className="text-xs text-muted-foreground">
+              {item.description}
+            </span>
           </TooltipContent>
         </Tooltip>
       );
@@ -74,10 +91,12 @@ export const Sidebar = () => {
   };
 
   return (
-    <div className={cn(
-      "fixed left-0 top-0 z-40 h-full bg-card border-r border-border transition-all duration-300",
-      sidebarCollapsed ? "w-16" : "w-64"
-    )}>
+    <div
+      className={cn(
+        "fixed left-0 top-0 z-40 h-full bg-card border-r border-border transition-all duration-300",
+        sidebarCollapsed ? "w-16" : "w-64"
+      )}
+    >
       <div className="flex h-full flex-col">
         {/* Logo */}
         <div className="flex h-16 items-center border-b border-border px-4">

@@ -39,7 +39,7 @@ const fetchCandidates = async (
     search,
     stage,
     page: page.toString(),
-    limit: "50",
+    limit: "1200",
   });
 
   const response = await fetch(`/api/candidates?${params}`);

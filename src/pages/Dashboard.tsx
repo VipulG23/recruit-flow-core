@@ -5,13 +5,13 @@ import {
   FileText,
   TrendingUp,
   Clock,
-  CheckCircle,
   AlertCircle,
   Building2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
+import {  useNavigate } from "react-router-dom";
+
 
 interface DashboardStats {
   totalJobs: number;
@@ -39,22 +39,13 @@ const fetchDashboardStats = async (): Promise<DashboardStats> => {
 
 
 export default function Dashboard() {
+  const navigate = useNavigate();
+
   const { data: stats, isLoading, error } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: fetchDashboardStats,
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 5 * 60 * 1000,
   });
-
-  if (error) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-center">
-          <h3 className="text-lg font-semibold text-destructive">Error loading dashboard</h3>
-          <p className="text-muted-foreground">Please try again later</p>
-        </div>
-      </div>
-    );
-  }
 
   const StatCard = ({
     title,
@@ -92,6 +83,17 @@ export default function Dashboard() {
       </CardContent>
     </Card>
   );
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-destructive">Error loading dashboard</h3>
+          <p className="text-muted-foreground">Please try again later</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -154,8 +156,6 @@ export default function Dashboard() {
           />
         </div>
       )}
-
-      {/* Performance Metrics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
@@ -168,9 +168,14 @@ export default function Dashboard() {
             <div className="space-y-2">
               <div className="flex items-center justify-between text-sm">
                 <span>Average Time to Hire</span>
-                <span className="font-semibold">{stats?.averageTimeToHire || 0} days</span>
+                <span className="font-semibold">
+                  {stats?.averageTimeToHire || 0} days
+                </span>
               </div>
-              <Progress value={((stats?.averageTimeToHire || 0) / 60) * 100} className="h-2" />
+              <Progress
+                value={((stats?.averageTimeToHire || 0) / 60) * 100}
+                className="h-2"
+              />
             </div>
 
             <div className="space-y-2">
@@ -180,7 +185,10 @@ export default function Dashboard() {
                   {stats ? Math.round(stats.offerAcceptanceRate * 100) : 0}%
                 </span>
               </div>
-              <Progress value={(stats?.offerAcceptanceRate || 0) * 100} className="h-2" />
+              <Progress
+                value={(stats?.offerAcceptanceRate || 0) * 100}
+                className="h-2"
+              />
             </div>
 
             <div className="pt-4 border-t">
@@ -205,7 +213,9 @@ export default function Dashboard() {
                 <div className="w-2 h-2 rounded-full bg-success"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">New candidate applied</p>
-                  <p className="text-xs text-muted-foreground">Senior Developer - 2 min ago</p>
+                  <p className="text-xs text-muted-foreground">
+                    Senior Developer - 2 min ago
+                  </p>
                 </div>
               </div>
 
@@ -213,7 +223,9 @@ export default function Dashboard() {
                 <div className="w-2 h-2 rounded-full bg-warning"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Interview scheduled</p>
-                  <p className="text-xs text-muted-foreground">Product Manager - 1 hour ago</p>
+                  <p className="text-xs text-muted-foreground">
+                    Product Manager - 1 hour ago
+                  </p>
                 </div>
               </div>
 
@@ -221,7 +233,9 @@ export default function Dashboard() {
                 <div className="w-2 h-2 rounded-full bg-primary"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Job posted</p>
-                  <p className="text-xs text-muted-foreground">UX Designer - 3 hours ago</p>
+                  <p className="text-xs text-muted-foreground">
+                    UX Designer - 3 hours ago
+                  </p>
                 </div>
               </div>
 
@@ -229,7 +243,9 @@ export default function Dashboard() {
                 <div className="w-2 h-2 rounded-full bg-success"></div>
                 <div className="flex-1">
                   <p className="text-sm font-medium">Offer accepted</p>
-                  <p className="text-xs text-muted-foreground">Data Scientist - 1 day ago</p>
+                  <p className="text-xs text-muted-foreground">
+                    Data Scientist - 1 day ago
+                  </p>
                 </div>
               </div>
             </div>
@@ -244,27 +260,55 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Card className="cursor-pointer hover:border-primary transition-colors">
+            {/* Create Job */}
+            <Card
+              className="cursor-pointer hover:border-primary transition-colors"
+              onClick={() =>
+                navigate("/jobs", { state: { highlightCreateJob: true } })
+              }
+            >
               <CardContent className="p-4 text-center">
                 <BriefcaseIcon className="h-8 w-8 text-primary mx-auto mb-2" />
                 <h3 className="font-semibold">Create Job</h3>
-                <p className="text-sm text-muted-foreground">Post a new job opening</p>
+                <p className="text-sm text-muted-foreground">
+                  Post a new job opening
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:border-primary transition-colors">
+            {/* Create Assessment */}
+            <Card
+              className="cursor-pointer hover:border-primary transition-colors"
+              onClick={() =>
+                navigate("/assessments", {
+                  state: { highlightCreateAssessment: true }, // ✅ corrected
+                })
+              }
+            >
               <CardContent className="p-4 text-center">
                 <FileText className="h-8 w-8 text-primary mx-auto mb-2" />
                 <h3 className="font-semibold">Create Assessment</h3>
-                <p className="text-sm text-muted-foreground">Build candidate evaluation</p>
+                <p className="text-sm text-muted-foreground">
+                  Build candidate evaluation
+                </p>
               </CardContent>
             </Card>
 
-            <Card className="cursor-pointer hover:border-primary transition-colors">
+            {/* Review Candidates */}
+            <Card
+              className="cursor-pointer hover:border-primary transition-colors"
+              onClick={() =>
+                navigate("/assessments", {
+                  state: { highlightCreateAssessment: true }, 
+                })
+              }
+            >
               <CardContent className="p-4 text-center">
                 <Users className="h-8 w-8 text-primary mx-auto mb-2" />
                 <h3 className="font-semibold">Review Candidates</h3>
-                <p className="text-sm text-muted-foreground">View pending applications</p>
+                <p className="text-sm text-muted-foreground">
+                  View pending applications
+                </p>
               </CardContent>
             </Card>
           </div>
